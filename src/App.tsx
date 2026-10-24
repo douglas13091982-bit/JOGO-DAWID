@@ -153,6 +153,14 @@ function App() {
             <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 mb-4 drop-shadow-lg">
               Aprende Brincando
             </h1>
+            <div className="bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 mb-4 inline-block border border-white/20">
+              <p className="text-sm md:text-base text-yellow-200 font-semibold">
+                👤 Aluno: <span className="text-white">Dawid Jelinsky</span>
+              </p>
+              <p className="text-xs md:text-sm text-purple-200">
+                🏫 Escola Municipal Dom Jaime Barros Câmara
+              </p>
+            </div>
             <p className="text-xl md:text-2xl text-purple-200 font-medium">
               🎮 O jogo educativo mais divertido! 🎮
             </p>
