@@ -344,21 +344,94 @@ function App() {
             </div>
           </div>
 
-          {/* Mini ranking */}
-          {ranking.length > 1 && (
-            <div className="mt-4 bg-white/5 rounded-xl p-3 border border-white/10">
-              <h3 className="text-white font-semibold text-xs sm:text-sm mb-2">🏆 Top 3 - Ranking Geral</h3>
-              <div className="space-y-1.5">
-                {ranking.slice(0, 3).map((student, idx) => (
-                  <div key={student.id} className={`flex items-center gap-2 p-1.5 rounded-lg ${student.id === currentStudent.id ? 'bg-yellow-500/20' : ''}`}>
-                    <span className="text-base sm:text-lg">{getRankPosition(idx)}</span>
-                    <span className={`flex-1 text-xs sm:text-sm truncate ${student.id === currentStudent.id ? 'text-yellow-300 font-bold' : 'text-white/80'}`}>
-                      {student.name} {student.id === currentStudent.id && '(você)'}
-                    </span>
-                    <span className="text-yellow-300 text-xs font-bold">{student.totalPoints}</span>
+          {/* Pódio dos Melhores Alunos */}
+          {ranking.length > 0 && (
+            <div className="mt-4 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-2xl p-4 border-2 border-yellow-400/30 shadow-xl">
+              <h3 className="text-white font-bold text-sm sm:text-base mb-3 text-center flex items-center justify-center gap-2">
+                <span className="text-xl">🏆</span>
+                <span>Melhores Alunos</span>
+                <span className="text-xl">🏆</span>
+              </h3>
+              
+              {/* Top 3 em formato de pódio */}
+              {ranking.length >= 3 && (
+                <div className="flex items-end justify-center gap-2 mb-3">
+                  {/* 2º lugar */}
+                  <div className="flex-1 flex flex-col items-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center text-lg sm:text-xl font-bold text-white mb-1 border-2 border-gray-400">
+                      {ranking[1].name.charAt(0).toUpperCase()}
+                    </div>
+                    <p className="text-white/90 text-[10px] sm:text-xs font-semibold truncate w-full text-center">{ranking[1].name}</p>
+                    <div className="bg-gray-400/30 rounded-lg px-2 py-1 mt-1 w-full text-center">
+                      <p className="text-gray-200 text-xs sm:text-sm font-bold">{ranking[1].totalPoints}</p>
+                      <p className="text-gray-300 text-[8px] sm:text-[9px]">pontos</p>
+                    </div>
+                    <div className="text-2xl sm:text-3xl mt-1">🥈</div>
                   </div>
-                ))}
-              </div>
+
+                  {/* 1º lugar */}
+                  <div className="flex-1 flex flex-col items-center">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xl sm:text-2xl font-bold text-white mb-1 border-2 border-yellow-300 shadow-lg shadow-yellow-500/50">
+                      {ranking[0].name.charAt(0).toUpperCase()}
+                    </div>
+                    <p className={`text-xs sm:text-sm font-bold truncate w-full text-center ${ranking[0].id === currentStudent.id ? 'text-yellow-300' : 'text-white'}`}>
+                      {ranking[0].name} {ranking[0].id === currentStudent.id && '⭐'}
+                    </p>
+                    <div className="bg-yellow-500/40 rounded-lg px-2 py-1 mt-1 w-full text-center border border-yellow-400/50">
+                      <p className="text-yellow-200 text-sm sm:text-base font-bold">{ranking[0].totalPoints}</p>
+                      <p className="text-yellow-300 text-[8px] sm:text-[9px]">pontos</p>
+                    </div>
+                    <div className="text-3xl sm:text-4xl mt-1">🥇</div>
+                  </div>
+
+                  {/* 3º lugar */}
+                  <div className="flex-1 flex flex-col items-center">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center text-lg sm:text-xl font-bold text-white mb-1 border-2 border-amber-500">
+                      {ranking[2].name.charAt(0).toUpperCase()}
+                    </div>
+                    <p className="text-white/90 text-[10px] sm:text-xs font-semibold truncate w-full text-center">{ranking[2].name}</p>
+                    <div className="bg-amber-600/30 rounded-lg px-2 py-1 mt-1 w-full text-center">
+                      <p className="text-amber-200 text-xs sm:text-sm font-bold">{ranking[2].totalPoints}</p>
+                      <p className="text-amber-300 text-[8px] sm:text-[9px]">pontos</p>
+                    </div>
+                    <div className="text-2xl sm:text-3xl mt-1">🥉</div>
+                  </div>
+                </div>
+              )}
+
+              {/* 4º e 5º lugares em lista */}
+              {ranking.length > 3 && (
+                <div className="space-y-1.5 mt-3 pt-3 border-t border-white/10">
+                  {ranking.slice(3, 5).map((student, idx) => (
+                    <div key={student.id} className={`flex items-center gap-2 p-2 rounded-lg ${student.id === currentStudent.id ? 'bg-yellow-500/20 border border-yellow-400/30' : 'bg-white/5'}`}>
+                      <span className="text-white/60 text-xs sm:text-sm font-bold w-6">#{idx + 4}</span>
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-xs sm:text-sm font-bold text-white shrink-0">
+                        {student.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className={`flex-1 text-xs sm:text-sm truncate ${student.id === currentStudent.id ? 'text-yellow-300 font-bold' : 'text-white/80'}`}>
+                        {student.name} {student.id === currentStudent.id && '(você)'}
+                      </span>
+                      <div className="text-right">
+                        <span className="text-yellow-300 text-xs sm:text-sm font-bold">{student.totalPoints}</span>
+                        <p className="text-white/40 text-[8px] sm:text-[9px]">pontos</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Mensagem motivacional */}
+              {ranking.length > 0 && (
+                <div className="mt-3 text-center">
+                  <p className="text-purple-200 text-[10px] sm:text-xs">
+                    {currentStudent.id === ranking[0]?.id 
+                      ? '🌟 Parabéns! Você é o líder do ranking!' 
+                      : position <= 5 
+                        ? `🔥 Você está em ${position}º! Continue jogando para subir!`
+                        : '💪 Jogue mais para entrar no Top 5!'}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
