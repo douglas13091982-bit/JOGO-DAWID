@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aprende Brincando - Jogo Educativo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;width:100%;min-height:100vh;min-height:100dvh;overflow-x:hidden}
+body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;-webkit-font-smoothing:antialiased}
+#root{width:100%;min-height:100vh;min-height:100dvh;overflow-x:hidden}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useCallback } = React;
+
+// ============ DADOS DAS QUESTÕES ============
+const questionsData = {
+  1: {
+    matematica: [
+      {id:1,question:"Quanto é 5 + 3?",options:["6","7","8","9"],correctAnswer:2,explanation:"5 + 3 = 8"},
+      {id:2,question:"Quanto é 10 - 4?",options:["5","6","7","8"],correctAnswer:1,explanation:"10 - 4 = 6"},
+      {id:3,question:"Quanto é 3 × 3?",options:["6","9","12","15"],correctAnswer:1,explanation:"3 × 3 = 9"},
+      {id:4,question:"Quanto é 20 ÷ 4?",options:["4","5","6","7"],correctAnswer:1,explanation:"20 ÷ 4 = 5"},
+      {id:5,question:"Quanto é 7 + 8?",options:["13","14","15","16"],correctAnswer:2,explanation:"7 + 8 = 15"},
+      {id:6,question:"Quanto é 12 - 5?",options:["5","6","7","8"],correctAnswer:2,explanation:"12 - 5 = 7"},
+      {id:7,question:"Quanto é 4 × 5?",options:["15","18","20","25"],correctAnswer:2,explanation:"4 × 5 = 20"},
+      {id:8,question:"Quanto é 30 ÷ 6?",options:["4","5","6","7"],correctAnswer:1,explanation:"30 ÷ 6 = 5"},
+      {id:9,question:"Quanto é 9 + 6?",options:["13","14","15","16"],correctAnswer:2,explanation:"9 + 6 = 15"},
+      {id:10,question:"Quanto é 15 - 8?",options:["5","6","7","8"],correctAnswer:2,explanation:"15 - 8 = 7"},
+    ],
+    portugues: [
+      {id:1,question:"Qual é o plural de 'gato'?",options:["Gatos","Gates","Gatões","Gatins"],correctAnswer:0,explanation:"O plural de 'gato' é 'gatos'"},
+      {id:2,question:"Qual palavra rima com 'amor'?",options:["Casa","Dor","Livro","Mesa"],correctAnswer:1,explanation:"'Dor' rima com 'amor'"},
+      {id:3,question:"Quantas sílabas tem 'bola'?",options:["1","2","3","4"],correctAnswer:1,explanation:"Bo-la = 2 sílabas"},
+      {id:4,question:"Qual é o feminino de 'menino'?",options:["Menina","Menino","Meninas","Meninos"],correctAnswer:0,explanation:"O feminino de 'menino' é 'menina'"},
+      {id:5,question:"Qual palavra é um substantivo?",options:["Correr","Bonito","Mesa","Rápido"],correctAnswer:2,explanation:"'Mesa' é um substantivo"},
+      {id:6,question:"Qual é o antônimo de 'quente'?",options:["Morno","Frio","Gelado","Tibio"],correctAnswer:1,explanation:"'Frio' é o antônimo de 'quente'"},
+      {id:7,question:"Qual é o sinônimo de 'bonito'?",options:["Feio","Lindo","Triste","Grande"],correctAnswer:1,explanation:"'Lindo' é sinônimo de 'bonito'"},
+      {id:8,question:"Qual letra é uma vogal?",options:["B","C","E","F"],correctAnswer:2,explanation:"As vogais são: A, E, I, O, U"},
+      {id:9,question:"Qual é o diminutivo de 'casa'?",options:["Casarão","Casinha","Casebre","Casona"],correctAnswer:1,explanation:"'Casinha' é o diminutivo de 'casa'"},
+      {id:10,question:"Qual frase está correta?",options:["Eu vai ao parque","Eu vou ao parque","Eu vamos ao parque","Eu irá ao parque"],correctAnswer:1,explanation:"A conjugação correta é 'eu vou'"},
+    ],
+    geografia: [
+      {id:1,question:"Qual é a capital do Brasil?",options:["São Paulo","Rio de Janeiro","Brasília","Salvador"],correctAnswer:2,explanation:"Brasília é a capital do Brasil"},
+      {id:2,question:"Em qual continente fica o Brasil?",options:["Europa","África","América","Ásia"],correctAnswer:2,explanation:"O Brasil fica na América do Sul"},
+      {id:3,question:"Qual é o maior oceano do mundo?",options:["Atlântico","Índico","Pacífico","Ártico"],correctAnswer:2,explanation:"O Oceano Pacífico é o maior"},
+      {id:4,question:"Quantos continentes existem?",options:["4","5","6","7"],correctAnswer:2,explanation:"Existem 6 continentes"},
+      {id:5,question:"Qual é o maior país da América do Sul?",options:["Argentina","Colômbia","Brasil","Peru"],correctAnswer:2,explanation:"O Brasil é o maior país"},
+      {id:6,question:"Qual é a capital da França?",options:["Londres","Madrid","Paris","Roma"],correctAnswer:2,explanation:"Paris é a capital da França"},
+      {id:7,question:"Qual é o rio mais famoso do Brasil?",options:["Rio Nilo","Rio Amazonas","Rio Mississipi","Rio Sena"],correctAnswer:1,explanation:"O Rio Amazonas é o mais famoso"},
+      {id:8,question:"Qual é a cor da bandeira do Brasil?",options:["Vermelho e branco","Verde e amarelo","Azul e branco","Verde e branco"],correctAnswer:1,explanation:"A bandeira é verde e amarela"},
+      {id:9,question:"Qual é o planeta em que vivemos?",options:["Marte","Vênus","Terra","Júpiter"],correctAnswer:2,explanation:"Vivemos no planeta Terra"},
+      {id:10,question:"Qual país tem formato de bota?",options:["França","Espanha","Itália","Grécia"],correctAnswer:2,explanation:"A Itália tem formato de bota"},
+    ],
+    historia: [
+      {id:1,question:"Em que ano o Brasil foi descoberto?",options:["1492","1500","1510","1488"],correctAnswer:1,explanation:"O Brasil foi descoberto em 1500"},
+      {id:2,question:"Quem descobriu o Brasil?",options:["Cristóvão Colombo","Pedro Álvares Cabral","Vasco da Gama","Fernão de Magalhães"],correctAnswer:1,explanation:"Pedro Álvares Cabral chegou ao Brasil em 1500"},
+      {id:3,question:"Em que ano o Brasil se tornou independente?",options:["1808","1815","1822","1889"],correctAnswer:2,explanation:"Independência em 7 de setembro de 1822"},
+      {id:4,question:"Quem proclamou a independência do Brasil?",options:["D. João VI","D. Pedro I","D. Pedro II","Tiradentes"],correctAnswer:1,explanation:"D. Pedro I proclamou a independência"},
+      {id:5,question:"Em que ano a escravidão foi abolida?",options:["1850","1871","1888","1891"],correctAnswer:2,explanation:"A Lei Áurea foi assinada em 1888"},
+      {id:6,question:"Quem assinou a Lei Áurea?",options:["D. Pedro II","Princesa Isabel","Getúlio Vargas","Deodoro da Fonseca"],correctAnswer:1,explanation:"A Princesa Isabel assinou a Lei Áurea"},
+      {id:7,question:"Em que ano foi proclamada a República?",options:["1822","1850","1888","1889"],correctAnswer:3,explanation:"A República foi proclamada em 1889"},
+      {id:8,question:"Quem foi o primeiro presidente do Brasil?",options:["Getúlio Vargas","Deodoro da Fonseca","Floriano Peixoto","Prudente de Morais"],correctAnswer:1,explanation:"Deodoro da Fonseca foi o primeiro presidente"},
+      {id:9,question:"Qual civilização construiu as pirâmides?",options:["Romana","Grega","Egípcia","Maia"],correctAnswer:2,explanation:"Os egípcios construíram as pirâmides"},
+      {id:10,question:"Em que ano o homem pisou na Lua?",options:["1965","1967","1969","1971"],correctAnswer:2,explanation:"Neil Armstrong pisou na Lua em 1969"},
+    ],
+    ciencias: [
+      {id:1,question:"Qual é o planeta em que vivemos?",options:["Marte","Vênus","Terra","Júpiter"],correctAnswer:2,explanation:"Vivemos no planeta Terra"},
+      {id:2,question:"Qual é a estrela mais próxima da Terra?",options:["Lua","Sol","Marte","Vênus"],correctAnswer:1,explanation:"O Sol é a estrela mais próxima"},
+      {id:3,question:"Quantos planetas tem o Sistema Solar?",options:["7","8","9","10"],correctAnswer:1,explanation:"O Sistema Solar tem 8 planetas"},
+      {id:4,question:"Qual é a fórmula química da água?",options:["CO₂","H₂O","O₂","NaCl"],correctAnswer:1,explanation:"A água é H₂O"},
+      {id:5,question:"Qual gás nós respiramos?",options:["Nitrogênio","Hidrogênio","Oxigênio","Hélio"],correctAnswer:2,explanation:"Nós respiramos oxigênio (O₂)"},
+      {id:6,question:"Quantos ossos tem o corpo humano adulto?",options:["106","206","306","406"],correctAnswer:1,explanation:"O corpo humano adulto tem 206 ossos"},
+      {id:7,question:"Qual é o maior órgão do corpo humano?",options:["Fígado","Coração","Pele","Pulmão"],correctAnswer:2,explanation:"A pele é o maior órgão"},
+      {id:8,question:"Qual é o maior planeta do Sistema Solar?",options:["Saturno","Júpiter","Netuno","Urano"],correctAnswer:1,explanation:"Júpiter é o maior planeta"},
+      {id:9,question:"O que as plantas precisam para fazer fotossíntese?",options:["Escuridão","Luz solar","Frio","Vento"],correctAnswer:1,explanation:"As plantas precisam de luz solar"},
+      {id:10,question:"Qual é o planeta mais próximo do Sol?",options:["Vênus","Mercúrio","Terra","Marte"],correctAnswer:1,explanation:"Mercúrio é o mais próximo do Sol"},
+    ],
+    ingles: [
+      {id:1,question:"Como se diz 'cachorro' em inglês? (dog)",options:["Cat","Dog","Bird","Fish"],correctAnswer:1,explanation:"'Dog' = cachorro"},
+      {id:2,question:"Como se diz 'gato' em inglês? (cat)",options:["Dog","Cat","Cow","Car"],correctAnswer:1,explanation:"'Cat' = gato"},
+      {id:3,question:"Como se diz 'casa' em inglês? (house)",options:["Horse","House","Mouse","Close"],correctAnswer:1,explanation:"'House' = casa"},
+      {id:4,question:"Como se diz 'livro' em inglês? (book)",options:["Look","Book","Lock","Block"],correctAnswer:1,explanation:"'Book' = livro"},
+      {id:5,question:"Como se diz 'água' em inglês? (water)",options:["Water","Waiter","Winter","Winner"],correctAnswer:0,explanation:"'Water' = água"},
+      {id:6,question:"Como se diz 'escola' em inglês? (school)",options:["Store","School","Street","Sky"],correctAnswer:1,explanation:"'School' = escola"},
+      {id:7,question:"Como se diz 'família' em inglês? (family)",options:["Friend","Family","Father","Far"],correctAnswer:1,explanation:"'Family' = família"},
+      {id:8,question:"Como se diz 'obrigado' em inglês? (thank you)",options:["Please","Sorry","Thank you","Hello"],correctAnswer:2,explanation:"'Thank you' = obrigado(a)"},
+      {id:9,question:"O que significa 'Good morning'? (Bom dia)",options:["Boa noite","Bom dia","Boa tarde","Até logo"],correctAnswer:1,explanation:"'Good morning' = Bom dia"},
+      {id:10,question:"O que significa 'Good night'? (Boa noite)",options:["Bom dia","Boa tarde","Boa noite","Bom sono"],correctAnswer:2,explanation:"'Good night' = Boa noite"},
+    ]
+  },
+  2: {
+    matematica: [
+      {id:1,question:"Quanto é 15 × 12?",options:["160","170","180","190"],correctAnswer:2,explanation:"15 × 12 = 180"},
+      {id:2,question:"Quanto é 25% de 80?",options:["15","20","25","30"],correctAnswer:1,explanation:"25% de 80 = 20"},
+      {id:3,question:"Qual é a raiz quadrada de 81?",options:["7","8","9","10"],correctAnswer:2,explanation:"√81 = 9"},
+      {id:4,question:"Quanto é 3³?",options:["9","18","27","81"],correctAnswer:2,explanation:"3³ = 27"},
+      {id:5,question:"Quanto é 144 ÷ 12?",options:["10","11","12","13"],correctAnswer:2,explanation:"144 ÷ 12 = 12"},
+      {id:6,question:"Qual é o MMC de 4 e 6?",options:["8","10","12","24"],correctAnswer:2,explanation:"O MMC de 4 e 6 é 12"},
+      {id:7,question:"Quanto é 2/3 + 1/6?",options:["3/9","5/6","1/2","3/6"],correctAnswer:1,explanation:"2/3 + 1/6 = 5/6"},
+      {id:8,question:"Quanto é (-5) × (-3)?",options:["-15","-8","8","15"],correctAnswer:3,explanation:"(-5) × (-3) = 15"},
+      {id:9,question:"Qual é o MDC de 18 e 24?",options:["3","4","6","12"],correctAnswer:2,explanation:"O MDC de 18 e 24 é 6"},
+      {id:10,question:"Quanto é 7² - 3²?",options:["30","40","50","58"],correctAnswer:1,explanation:"49 - 9 = 40"},
+    ],
+    portugues: [
+      {id:1,question:"Qual é o plural de 'cidadão'?",options:["Cidadãos","Cidadões","Cidadães","Cidadans"],correctAnswer:0,explanation:"O plural de cidadão é cidadãos"},
+      {id:2,question:"Qual é o sujeito de: 'Os alunos estudaram muito'?",options:["Estudaram","Muito","Os alunos","Estudaram muito"],correctAnswer:2,explanation:"'Os alunos' é o sujeito"},
+      {id:3,question:"Qual palavra está escrita corretamente?",options:["Exceção","Excessão","Exceçao","Exseção"],correctAnswer:0,explanation:"A forma correta é 'exceção'"},
+      {id:4,question:"Qual é a conjugação de 'fazer' na 1ª pessoa?",options:["Fazia","Faço","Fiz","Farei"],correctAnswer:1,explanation:"Eu faço - presente do indicativo"},
+      {id:5,question:"Qual é o sinônimo de 'efêmero'?",options:["Eterno","Passageiro","Permanente","Sólido"],correctAnswer:1,explanation:"'Efêmero' significa passageiro"},
+      {id:6,question:"Qual frase usa a crase corretamente?",options:["Vou à escola","Vou a escola","Vou à casa","Vou a pé"],correctAnswer:0,explanation:"'Vou à escola' - crase correta"},
+      {id:7,question:"Qual é o antônimo de 'prolixo'?",options:["Longo","Conciso","Extenso","Verboso"],correctAnswer:1,explanation:"'Conciso' é antônimo de 'prolixo'"},
+      {id:8,question:"Qual é o plural de 'hífen'?",options:["Hifens","Hífenes","Hifens","Hífenes"],correctAnswer:1,explanation:"O plural de 'hífen' é 'hífenes'"},
+      {id:9,question:"Qual palavra tem hiato?",options:["Pais","Saída","Cadeira","Floresta"],correctAnswer:1,explanation:"Sa-í-da tem hiato"},
+      {id:10,question:"Qual é a classe gramatical de 'rapidamente'?",options:["Adjetivo","Substantivo","Advérbio","Verbo"],correctAnswer:2,explanation:"'Rapidamente' é advérbio de modo"},
+    ],
+    geografia: [
+      {id:1,question:"Qual é o maior país do mundo em extensão?",options:["China","EUA","Canadá","Rússia"],correctAnswer:3,explanation:"A Rússia é o maior país"},
+      {id:2,question:"Qual é o rio mais longo do mundo?",options:["Nilo","Amazonas","Mississipi","Yangtzé"],correctAnswer:1,explanation:"O Rio Amazonas é o mais longo"},
+      {id:3,question:"Qual é a capital da Austrália?",options:["Sydney","Melbourne","Canberra","Perth"],correctAnswer:2,explanation:"Canberra é a capital da Austrália"},
+      {id:4,question:"Qual é o maior bioma brasileiro?",options:["Cerrado","Amazônia","Mata Atlântica","Caatinga"],correctAnswer:1,explanation:"A Amazônia é o maior bioma"},
+      {id:5,question:"Qual é a camada da Terra onde vivemos?",options:["Manto","Núcleo","Crosta","Astenosfera"],correctAnswer:2,explanation:"Vivemos na crosta terrestre"},
+      {id:6,question:"Qual país tem mais fusos horários?",options:["Rússia","EUA","China","França"],correctAnswer:3,explanation:"A França tem 12 fusos horários"},
+      {id:7,question:"Qual é o maior arquipélago do mundo?",options:["Filipinas","Indonésia","Japão","Maldivas"],correctAnswer:1,explanation:"A Indonésia é o maior arquipélago"},
+      {id:8,question:"Qual é a cordilheira mais longa do mundo?",options:["Himalaia","Andes","Alpes","Rochosas"],correctAnswer:1,explanation:"A Cordilheira dos Andes é a mais longa"},
+      {id:9,question:"Qual é a capital do Canadá?",options:["Toronto","Vancouver","Ottawa","Montreal"],correctAnswer:2,explanation:"Ottawa é a capital do Canadá"},
+      {id:10,question:"Qual é o maior lago de água doce em volume?",options:["Superior","Baikal","Vitória","Titicaca"],correctAnswer:1,explanation:"O Lago Baikal é o maior em volume"},
+    ],
+    historia: [
+      {id:1,question:"Quem foi Cleópatra?",options:["Rainha de Roma","Rainha do Egito","Imperatriz da Grécia","Rainha da Pérsia"],correctAnswer:1,explanation:"Cleópatra foi rainha do Egito"},
+      {id:2,question:"O que foi o Renascimento?",options:["Guerra religiosa","Movimento cultural e artístico","Revolução industrial","Período de guerras"],correctAnswer:1,explanation:"O Renascimento foi um movimento cultural"},
+      {id:3,question:"Em que ano foi a Revolução Francesa?",options:["1776","1789","1799","1815"],correctAnswer:1,explanation:"A Revolução Francesa começou em 1789"},
+      {id:4,question:"Quem foi Abraham Lincoln?",options:["Rei da Inglaterra","Presidente dos EUA","Imperador da França","Líder da Rússia"],correctAnswer:1,explanation:"Lincoln foi presidente dos EUA"},
+      {id:5,question:"O que foi a Revolução Industrial?",options:["Revolução política","Mudança na produção com máquinas","Guerra entre países","Movimento religioso"],correctAnswer:1,explanation:"Foi a transição para produção com máquinas"},
+      {id:6,question:"Quem foi Mahatma Gandhi?",options:["Líder militar","Líder pacifista da Índia","Imperador chinês","Filósofo grego"],correctAnswer:1,explanation:"Gandhi liderou a independência da Índia"},
+      {id:7,question:"O que foi o Holocausto?",options:["Guerra civil","Genocídio de judeus pelos nazistas","Revolução russa","Guerra fria"],correctAnswer:1,explanation:"Foi o genocídio de 6 milhões de judeus"},
+      {id:8,question:"Em que ano foi a Revolução Russa?",options:["1905","1914","1917","1920"],correctAnswer:2,explanation:"A Revolução Russa ocorreu em 1917"},
+      {id:9,question:"Quem foi Martin Luther King Jr.?",options:["Presidente dos EUA","Líder dos direitos civis","General","Cientista"],correctAnswer:1,explanation:"King foi líder dos direitos civis"},
+      {id:10,question:"O que foi a Guerra do Vietnã?",options:["Guerra entre EUA e China","Conflito no Vietnã com intervenção dos EUA","Guerra civil francesa","Conflito no Japão"],correctAnswer:1,explanation:"Foi um conflito com intervenção americana"},
+    ],
+    ciencias: [
+      {id:1,question:"Qual é o elemento químico mais abundante no universo?",options:["Oxigênio","Carbono","Hélio","Hidrogênio"],correctAnswer:3,explanation:"O hidrogênio é o mais abundante"},
+      {id:2,question:"Qual é a função do DNA?",options:["Produzir energia","Armazenar informação genética","Transportar oxigênio","Defender o corpo"],correctAnswer:1,explanation:"O DNA armazena informações genéticas"},
+      {id:3,question:"O que é fotossíntese?",options:["Respiração das plantas","Produção de alimento pelas plantas","Reprodução das plantas","Crescimento das plantas"],correctAnswer:1,explanation:"Fotossíntese é produção de alimento"},
+      {id:4,question:"Qual é a unidade de medida de força?",options:["Joule","Watt","Newton","Pascal"],correctAnswer:2,explanation:"A unidade de força é o Newton"},
+      {id:5,question:"O que é mitose?",options:["Reprodução sexuada","Divisão celular","Fotossíntese","Respiração celular"],correctAnswer:1,explanation:"Mitose é a divisão celular"},
+      {id:6,question:"Qual é o pH da água pura?",options:["5","6","7","8"],correctAnswer:2,explanation:"A água pura tem pH 7"},
+      {id:7,question:"O que é um átomo?",options:["Molécula de água","Menor parte de um elemento","Tipo de célula","Tipo de tecido"],correctAnswer:1,explanation:"O átomo é a menor parte de um elemento"},
+      {id:8,question:"Qual é o órgão que filtra o sangue?",options:["Coração","Fígado","Rim","Pulmão"],correctAnswer:2,explanation:"Os rins filtram o sangue"},
+      {id:9,question:"O que é a lei da gravitação universal?",options:["Lei de Newton sobre gravidade","Lei de Einstein","Lei de Ohm","Lei de Faraday"],correctAnswer:0,explanation:"É a lei de Newton sobre gravidade"},
+      {id:10,question:"Qual é a fórmula do gás carbônico?",options:["CO","CO₂","C₂O","O₂C"],correctAnswer:1,explanation:"O gás carbônico é CO₂"},
+    ],
+    ingles: [
+      {id:1,question:"O que significa 'beautiful'? (bonito/bela)",options:["Feio","Bonito/Bela","Grande","Pequeno"],correctAnswer:1,explanation:"'Beautiful' = bonito, belo"},
+      {id:2,question:"Como se diz 'eu gosto de' em inglês?",options:["I love","I like","I hate","I want"],correctAnswer:1,explanation:"'I like' = eu gosto de"},
+      {id:3,question:"O que significa 'yesterday'? (ontem)",options:["Hoje","Amanhã","Ontem","Sempre"],correctAnswer:2,explanation:"'Yesterday' = ontem"},
+      {id:4,question:"Como se diz 'por favor' em inglês?",options:["Thank you","Sorry","Please","Excuse me"],correctAnswer:2,explanation:"'Please' = por favor"},
+      {id:5,question:"O que significa 'tomorrow'? (amanhã)",options:["Ontem","Hoje","Amanhã","Sempre"],correctAnswer:2,explanation:"'Tomorrow' = amanhã"},
+      {id:6,question:"Complete: She ___ a doctor.",options:["am","is","are","be"],correctAnswer:1,explanation:"She is = ela é"},
+      {id:7,question:"O que significa 'kitchen'? (cozinha)",options:["Quarto","Sala","Cozinha","Banheiro"],correctAnswer:2,explanation:"'Kitchen' = cozinha"},
+      {id:8,question:"Como se diz 'eu não sei' em inglês?",options:["I don't know","I don't understand","I don't want","I don't like"],correctAnswer:0,explanation:"'I don't know' = eu não sei"},
+      {id:9,question:"O que significa 'breakfast'? (café da manhã)",options:["Almoço","Jantar","Café da manhã","Lanche"],correctAnswer:2,explanation:"'Breakfast' = café da manhã"},
+      {id:10,question:"Qual é o passado de 'go'? (ir)",options:["Goed","Gone","Went","Going"],correctAnswer:2,explanation:"O passado de 'go' é 'went'"},
+    ]
+  },
+  3: {
+    matematica: [
+      {id:1,question:"Qual é a derivada de x³?",options:["x²","2x²","3x²","3x³"],correctAnswer:2,explanation:"d/dx(x³) = 3x²"},
+      {id:2,question:"Quanto é log₁₀(1000)?",options:["2","3","4","10"],correctAnswer:1,explanation:"log₁₀(1000) = 3"},
+      {id:3,question:"Qual é o valor de sen(90°)?",options:["0","0,5","1","-1"],correctAnswer:2,explanation:"sen(90°) = 1"},
+      {id:4,question:"Qual é a integral de 2x?",options:["x","x²","2x²","x² + C"],correctAnswer:3,explanation:"∫2x dx = x² + C"},
+      {id:5,question:"Quanto é a soma dos ângulos internos de um hexágono?",options:["360°","540°","720°","900°"],correctAnswer:2,explanation:"Soma = (n-2) × 180° = 720°"},
+      {id:6,question:"Qual é o determinante da matriz [[2,1],[3,4]]?",options:["5","8","11","-5"],correctAnswer:0,explanation:"det = 2×4 - 1×3 = 5"},
+      {id:7,question:"Quanto é cos(0°)?",options:["0","0,5","1","-1"],correctAnswer:2,explanation:"cos(0°) = 1"},
+      {id:8,question:"Qual é a solução de x² - 5x + 6 = 0?",options:["x=1, x=6","x=2, x=3","x=-2, x=-3","x=1, x=5"],correctAnswer:1,explanation:"x=2 ou x=3"},
+      {id:9,question:"Qual é o valor de e (número de Euler)?",options:["2,71","3,14","1,61","1,41"],correctAnswer:0,explanation:"e ≈ 2,71828..."},
+      {id:10,question:"Qual é a fórmula da área de um trapézio?",options:["b × h","(B+b) × h / 2","π × r²","l²"],correctAnswer:1,explanation:"Área = (B+b) × h / 2"},
+    ],
+    portugues: [
+      {id:1,question:"Qual é a figura de linguagem em 'Seus olhos são duas estrelas'?",options:["Metáfora","Comparação","Metonímia","Hipérbole"],correctAnswer:0,explanation:"Metáfora é comparação implícita"},
+      {id:2,question:"Qual é a oração subordinada em: 'Espero que você venha'?",options:["Espero","que você venha","você venha","Espero que"],correctAnswer:1,explanation:"'Que você venha' é subordinada"},
+      {id:3,question:"Qual é a função do 'que' em: 'O livro que li é bom'?",options:["Conjunção","Pronome relativo","Preposição","Advérbio"],correctAnswer:1,explanation:"'Que' é pronome relativo"},
+      {id:4,question:"Qual é o vício de linguagem em 'subir para cima'?",options:["Estrangeirismo","Pleonasmo","Barbarismo","Solecismo"],correctAnswer:1,explanation:"Pleonasmo é redundância"},
+      {id:5,question:"Qual é a classe de 'não' em 'Ele não veio'?",options:["Conjunção","Preposição","Advérbio","Pronome"],correctAnswer:2,explanation:"'Não' é advérbio de negação"},
+      {id:6,question:"Qual é a norma culta: 'Há ou A' em '___ dois anos'?",options:["A","Há","À","Aa"],correctAnswer:1,explanation:"'Há' indica tempo passado"},
+      {id:7,question:"Qual é o tipo de sujeito em: 'Existem problemas'?",options:["Simples","Composto","Oculto","Inexistente"],correctAnswer:0,explanation:"'Problemas' é sujeito simples"},
+      {id:8,question:"Qual é a função do 'se' em: 'Vende-se casas'?",options:["Pronome apassivador","Índice de indeterminação","Conjunção","Pronome reflexivo"],correctAnswer:0,explanation:"'Se' é pronome apassivador"},
+      {id:9,question:"Qual é o tipo de coesão em 'o autor... este'?",options:["Referenciação","Elipse","Substituição lexical","Repetição"],correctAnswer:2,explanation:"'Este' substitui 'o autor'"},
+      {id:10,question:"Qual é a concordância correta?",options:["Fazem dois anos","Faz dois anos","Fazem-se dois anos","Faz-se dois anos"],correctAnswer:1,explanation:"'Faz' é impessoal"},
+    ],
+    geografia: [
+      {id:1,question:"Qual é a profundidade da Fossa das Marianas?",options:["8.000m","9.000m","11.000m","13.000m"],correctAnswer:2,explanation:"Cerca de 11.000m"},
+      {id:2,question:"Qual é o maior delta do mundo?",options:["Nilo","Ganges-Brahmaputra","Mekong","Mississipi"],correctAnswer:1,explanation:"O delta do Ganges-Brahmaputra"},
+      {id:3,question:"Qual é a corrente marinha que resfria a costa oeste da América do Sul?",options:["Golfo","Brasil","Humboldt","Kuroshio"],correctAnswer:2,explanation:"A Corrente de Humboldt"},
+      {id:4,question:"Qual é a placa tectônica onde fica o Brasil?",options:["Nazca","Sul-Americana","Africana","Antártica"],correctAnswer:1,explanation:"Placa Sul-Americana"},
+      {id:5,question:"Qual é o tipo climático do sertão nordestino?",options:["Tropical","Semiárido","Equatorial","Subtropical"],correctAnswer:1,explanation:"Clima semiárido"},
+      {id:6,question:"Qual é a maior falha geológica do mundo?",options:["Andes","San Andreas","Himalaia","Dorsal Mesoatlântica"],correctAnswer:3,explanation:"A Dorsal Mesoatlântica"},
+      {id:7,question:"Qual é a latitude de São Paulo aproximadamente?",options:["0°","15°S","23°S","30°S"],correctAnswer:2,explanation:"Aproximadamente 23°S"},
+      {id:8,question:"Qual é o maior aquífero do mundo?",options:["Guarani","Ogallala","Núbio","Grande Bacia Artesiana"],correctAnswer:3,explanation:"O Grande Bacia Artesiana"},
+      {id:9,question:"Qual é a zona climática entre os trópicos?",options:["Temperada","Polar","Tropical/Intertropical","Subpolar"],correctAnswer:2,explanation:"Zona intertropical"},
+      {id:10,question:"Qual é o PIB do Brasil em relação ao mundo?",options:["5º","8º","10º","12º"],correctAnswer:2,explanation:"10º maior PIB do mundo"},
+    ],
+    historia: [
+      {id:1,question:"O que foi o Tratado de Tordesilhas (1494)?",options:["Paz entre França e Inglaterra","Divisão de terras entre Portugal e Espanha","Fim das Cruzadas","Aliança militar"],correctAnswer:1,explanation:"Dividiu terras entre Portugal e Espanha"},
+      {id:2,question:"Quem foi Maquiavel?",options:["Pintor renascentista","Filósofo político","Navegador","Cientista"],correctAnswer:1,explanation:"Filósofo político, autor de 'O Príncipe'"},
+      {id:3,question:"O que foi o Antigo Regime?",options:["Democracia grega","Sistema absolutista europeu","República romana","Feudalismo"],correctAnswer:1,explanation:"Sistema absolutista pré-Revolução"},
+      {id:4,question:"Quem foi Voltaire?",options:["Rei francês","Filósofo iluminista","Cientista","Militar"],correctAnswer:1,explanation:"Filósofo iluminista francês"},
+      {id:5,question:"O que foi a Doutrina Monroe?",options:["Aliança europeia","'América para os americanos'","Plano econômico","Tratado de paz"],correctAnswer:1,explanation:"'América para os americanos' (1823)"},
+      {id:6,question:"Quem foi Bismarck?",options:["Rei da Inglaterra","Chanceler alemão unificador","Imperador austríaco","Czar russo"],correctAnswer:1,explanation:"Bismarck unificou a Alemanha"},
+      {id:7,question:"O que foi a Conferência de Berlim (1884-85)?",options:["Fim da 1ª Guerra","Partilha da África","Revolução Industrial","Guerra Fria"],correctAnswer:1,explanation:"Organizou a partilha da África"},
+      {id:8,question:"Quem foi Adam Smith?",options:["Filósofo político","Pai do liberalismo econômico","Cientista","Militar"],correctAnswer:1,explanation:"Pai do liberalismo econômico"},
+      {id:9,question:"O que foi a Guerra dos Cem Anos?",options:["Guerra entre França e Inglaterra","Guerra civil americana","Cruzada","Guerra napoleônica"],correctAnswer:0,explanation:"Conflito entre França e Inglaterra"},
+      {id:10,question:"Quem foi Karl Marx?",options:["Capitalista","Filósofo comunista","Monarquista","Liberal"],correctAnswer:1,explanation:"Pai do comunismo científico"},
+    ],
+    ciencias: [
+      {id:1,question:"Qual é a equação de Einstein?",options:["F=ma","E=mc²","V=IR","PV=nRT"],correctAnswer:1,explanation:"E=mc²"},
+      {id:2,question:"O que é a Teoria da Relatividade?",options:["Teoria das cores","Tempo e espaço são relativos","Teoria atômica","Teoria das cordas"],correctAnswer:1,explanation:"Tempo e espaço são relativos"},
+      {id:3,question:"Qual é o número de Avogadro?",options:["6,02 × 10²³","3,14 × 10⁸","1,6 × 10⁻¹⁹","9,8 m/s²"],correctAnswer:0,explanation:"6,02 × 10²³"},
+      {id:4,question:"O que é um bóson de Higgs?",options:["Tipo de átomo","Partícula que dá massa a outras","Tipo de onda","Tipo de célula"],correctAnswer:1,explanation:"Partícula que confere massa"},
+      {id:5,question:"Qual é a segunda lei da termodinâmica?",options:["Energia se conserva","Entropia sempre aumenta","F=ma","E=mc²"],correctAnswer:1,explanation:"Entropia sempre aumenta"},
+      {id:6,question:"O que é CRISPR?",options:["Tipo de célula","Técnica de edição genética","Tipo de vírus","Tipo de bactéria"],correctAnswer:1,explanation:"Técnica de edição do DNA"},
+      {id:7,question:"Qual é o princípio de Heisenberg?",options:["Energia se conserva","Não se pode conhecer posição e velocidade simultaneamente","F=ma","E=mc²"],correctAnswer:1,explanation:"Princípio da incerteza"},
+      {id:8,question:"O que é matéria escura?",options:["Matéria negra","Matéria invisível que compõe 27% do universo","Buraco negro","Antimatéria"],correctAnswer:1,explanation:"Compõe ~27% do universo"},
+      {id:9,question:"Qual é a equação de Schrödinger?",options:["Equação de ondas quânticas","Equação de gravidade","Equação química","Equação de movimento"],correctAnswer:0,explanation:"Descreve sistemas quânticos"},
+      {id:10,question:"O que é a seleção natural?",options:["Escolha humana","Sobrevivência dos mais aptos","Acasalamento aleatório","Mutação forçada"],correctAnswer:1,explanation:"Os mais aptos sobrevivem"},
+    ],
+    ingles: [
+      {id:1,question:"O que significa 'nevertheless'? (no entanto)",options:["Portanto","No entanto","Porque","Assim"],correctAnswer:1,explanation:"'Nevertheless' = no entanto"},
+      {id:2,question:"Qual é o 'past perfect' de 'go'?",options:["had gone","has gone","was going","went"],correctAnswer:0,explanation:"Past perfect: had + particípio"},
+      {id:3,question:"O que significa 'thorough'? (minucioso)",options:["Rápido","Minucioso/Completo","Superficial","Lento"],correctAnswer:1,explanation:"'Thorough' = minucioso"},
+      {id:4,question:"Complete com subjuntivo: 'I wish I ___ rich'",options:["am","was","were","be"],correctAnswer:2,explanation:"Subjuntivo: 'I wish I were'"},
+      {id:5,question:"O que significa 'overwhelming'? (avassalador)",options:["Calmo","Avassalador","Leve","Fraco"],correctAnswer:1,explanation:"'Overwhelming' = avassalador"},
+      {id:6,question:"Qual é a voz passiva de 'She wrote the book'?",options:["The book was written by her","The book is written","The book wrote","The book has written"],correctAnswer:0,explanation:"Voz passiva no past"},
+      {id:7,question:"O que significa 'resilient'? (resiliente)",options:["Frágil","Resiliente","Rápido","Lento"],correctAnswer:1,explanation:"'Resilient' = resiliente"},
+      {id:8,question:"Qual é o 'future perfect' de 'finish'?",options:["will finish","will have finished","will be finishing","has finished"],correctAnswer:1,explanation:"will have + particípio"},
+      {id:9,question:"O que significa 'ambiguous'? (ambíguo)",options:["Claro","Ambíguo","Óbvio","Simples"],correctAnswer:1,explanation:"'Ambiguous' = ambíguo"},
+      {id:10,question:"Complete: 'If I ___ you, I would go'",options:["am","was","were","be"],correctAnswer:2,explanation:"2nd conditional: 'If I were you'"},
+    ]
+  }
+};
+
+const subjects = [
+  {id:"matematica",name:"Matemática",icon:"🔢",color:"from-blue-500 to-blue-700"},
+  {id:"portugues",name:"Português",icon:"📚",color:"from-green-500 to-green-700"},
+  {id:"geografia",name:"Geografia",icon:"🌍",color:"from-emerald-500 to-emerald-700"},
+  {id:"historia",name:"História",icon:"📜",color:"from-amber-500 to-amber-700"},
+  {id:"ciencias",name:"Ciências",icon:"🔬",color:"from-purple-500 to-purple-700"},
+  {id:"ingles",name:"Inglês",icon:"🇬🇧",color:"from-red-500 to-red-700"},
+];
+
+const phases = [
+  {id:1,name:"Fase 1",description:"Nível Básico",icon:"🌱",difficulty:"Fácil",color:"from-green-400 to-green-600"},
+  {id:2,name:"Fase 2",description:"Nível Intermediário",icon:"🌿",difficulty:"Médio",color:"from-yellow-400 to-orange-500"},
+  {id:3,name:"Fase 3",description:"Nível Avançado",icon:"🌳",difficulty:"Difícil",color:"from-red-400 to-red-600"},
+];
+
+const TROPHY_DEFINITIONS = [
+  {id:'first_quiz',name:'Primeiro Passo',icon:'🎯',description:'Complete seu primeiro quiz',tier:'bronze',req:s=>s.totalAnswered>0},
+  {id:'ten_quizzes',name:'Estudante Dedicado',icon:'📚',description:'Complete 10 quizzes',tier:'bronze',req:s=>s.totalAnswered>=100},
+  {id:'fifty_correct',name:'Mente Brilhante',icon:'🧠',description:'Acerte 50 questões',tier:'bronze',req:s=>s.totalCorrect>=50},
+  {id:'hundred_correct',name:'Gênio em Ascensão',icon:'⭐',description:'Acerte 100 questões',tier:'silver',req:s=>s.totalCorrect>=100},
+  {id:'streak_5',name:'Em Chamas!',icon:'🔥',description:'Sequência de 5 acertos',tier:'bronze',req:s=>s.bestStreak>=5},
+  {id:'streak_10',name:'Imparável!',icon:'💥',description:'Sequência de 10 acertos',tier:'silver',req:s=>s.bestStreak>=10},
+  {id:'streak_20',name:'Lendário!',icon:'⚡',description:'Sequência de 20 acertos',tier:'gold',req:s=>s.bestStreak>=20},
+  {id:'points_100',name:'Iniciante',icon:'🥉',description:'Alcance 100 pontos',tier:'bronze',req:s=>s.totalPoints>=100},
+  {id:'points_500',name:'Intermediário',icon:'🥈',description:'Alcance 500 pontos',tier:'silver',req:s=>s.totalPoints>=500},
+  {id:'points_1000',name:'Avançado',icon:'🥇',description:'Alcance 1000 pontos',tier:'gold',req:s=>s.totalPoints>=1000},
+  {id:'points_2500',name:'Mestre',icon:'💎',description:'Alcance 2500 pontos',tier:'diamond',req:s=>s.totalPoints>=2500},
+  {id:'points_5000',name:'Lenda',icon:'👑',description:'Alcance 5000 pontos',tier:'master',req:s=>s.totalPoints>=5000},
+  {id:'all_subjects',name:'Polímata',icon:'🎓',description:'Jogue todas as matérias',tier:'gold',req:s=>Object.keys(s.subjectProgress).length>=6},
+  {id:'all_phases',name:'Explorador',icon:'🗺️',description:'Complete todas as fases',tier:'diamond',req:s=>s.phaseProgress[1]>0&&s.phaseProgress[2]>0&&s.phaseProgress[3]>0},
+  {id:'stars_10',name:'Colecionador',icon:'🌟',description:'Colete 10 estrelas',tier:'silver',req:s=>s.stars>=10},
+  {id:'stars_50',name:'Constelação',icon:'✨',description:'Colete 50 estrelas',tier:'gold',req:s=>s.stars>=50},
+  {id:'level_5',name:'Nível 5',icon:'🏅',description:'Alcance o nível 5',tier:'silver',req:s=>s.level>=5},
+  {id:'level_10',name:'Nível 10',icon:'🏆',description:'Alcance o nível 10',tier:'gold',req:s=>s.level>=10},
+  {id:'level_20',name:'Nível 20',icon:'👑',description:'Alcance o nível 20',tier:'master',req:s=>s.level>=20},
+];
+
+const getLevelFromPoints = (points) => Math.floor(Math.sqrt(points / 50)) + 1;
+const getPointsForNextLevel = (level) => Math.pow(level, 2) * 50;
+const calculatePoints = (correct, streak, phaseId) => {
+  const basePoints = correct * 10;
+  const streakBonus = Math.floor(streak / 3) * 5;
+  return (basePoints + streakBonus) * phaseId;
+};
+const getStarsForQuiz = (correct, total) => {
+  const percentage = (correct / total) * 100;
+  if (percentage >= 90) return 3;
+  if (percentage >= 70) return 2;
+  if (percentage >= 50) return 1;
+  return 0;
+};
+
+const getTierColor = (tier) => {
+  switch (tier) {
+    case 'bronze': return 'from-amber-600 to-amber-800';
+    case 'silver': return 'from-gray-300 to-gray-500';
+    case 'gold': return 'from-yellow-400 to-yellow-600';
+    case 'diamond': return 'from-cyan-300 to-blue-500';
+    case 'master': return 'from-purple-400 to-pink-600';
+  }
+};
+
+const getTierBorder = (tier) => {
+  switch (tier) {
+    case 'bronze': return 'border-amber-500';
+    case 'silver': return 'border-gray-400';
+    case 'gold': return 'border-yellow-400';
+    case 'diamond': return 'border-cyan-400';
+    case 'master': return 'border-purple-400';
+  }
+};
+
+const STORAGE_KEY = 'aprende_brincando_students';
+const CURRENT_USER_KEY = 'aprende_brincando_current_user';
+
+const loadStudents = () => {
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch { return []; }
+};
+
+const saveStudents = (students) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
+};
+
+const loadCurrentUser = () => {
+  try { return localStorage.getItem(CURRENT_USER_KEY); } catch { return null; }
+};
+
+const saveCurrentUser = (id) => {
+  if (id) localStorage.setItem(CURRENT_USER_KEY, id);
+  else localStorage.removeItem(CURRENT_USER_KEY);
+};
+
+function shuffleArray(array) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function useStudents() {
+  const [students, setStudents] = useState([]);
+  const [currentStudentId, setCurrentStudentId] = useState(null);
+  const [newTrophies, setNewTrophies] = useState([]);
+
+  useEffect(() => {
+    setStudents(loadStudents());
+    setCurrentStudentId(loadCurrentUser());
+  }, []);
+
+  const currentStudent = students.find(s => s.id === currentStudentId) || null;
+
+  const registerStudent = (name) => {
+    const trimmedName = name.trim();
+    if (!trimmedName) throw new Error('Nome é obrigatório');
+    const existing = students.find(s => s.name.toLowerCase() === trimmedName.toLowerCase());
+    if (existing) {
+      setCurrentStudentId(existing.id);
+      saveCurrentUser(existing.id);
+      return existing;
+    }
+    const newStudent = {
+      id: `student_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+      name: trimmedName,
+      createdAt: Date.now(),
+      totalPoints: 0,
+      totalCorrect: 0,
+      totalAnswered: 0,
+      bestStreak: 0,
+      trophies: [],
+      stars: 0,
+      level: 1,
+      phaseProgress: {1: 0, 2: 0, 3: 0},
+      subjectProgress: {},
+      lastPlayed: Date.now(),
+    };
+    const updated = [...students, newStudent];
+    setStudents(updated);
+    saveStudents(updated);
+    setCurrentStudentId(newStudent.id);
+    saveCurrentUser(newStudent.id);
+    return newStudent;
+  };
+
+  const selectStudent = (id) => {
+    setCurrentStudentId(id);
+    saveCurrentUser(id);
+  };
+
+  const logout = () => {
+    setCurrentStudentId(null);
+    saveCurrentUser(null);
+  };
+
+  const recordQuizResult = (subjectId, phaseId, correct, wrong, streak) => {
+    if (!currentStudentId) return;
+    const total = correct + wrong;
+    const pointsEarned = calculatePoints(correct, streak, phaseId);
+    const starsEarned = getStarsForQuiz(correct, total);
+    const updatedStudents = students.map(s => {
+      if (s.id !== currentStudentId) return s;
+      const newStudent = {...s};
+      newStudent.totalCorrect += correct;
+      newStudent.totalAnswered += total;
+      newStudent.totalPoints += pointsEarned;
+      newStudent.bestStreak = Math.max(newStudent.bestStreak, streak);
+      newStudent.stars += starsEarned;
+      newStudent.level = getLevelFromPoints(newStudent.totalPoints);
+      newStudent.lastPlayed = Date.now();
+      newStudent.phaseProgress = {...newStudent.phaseProgress, [phaseId]: (newStudent.phaseProgress[phaseId] || 0) + 1};
+      newStudent.subjectProgress = {...newStudent.subjectProgress, [subjectId]: (newStudent.subjectProgress[subjectId] || 0) + 1};
+      const earnedTrophies = [];
+      TROPHY_DEFINITIONS.forEach(def => {
+        const alreadyHas = newStudent.trophies.some(t => t.id === def.id);
+        if (!alreadyHas && def.req(newStudent)) {
+          earnedTrophies.push({id: def.id, name: def.name, icon: def.icon, description: def.description, unlockedAt: Date.now(), tier: def.tier});
+        }
+      });
+      if (earnedTrophies.length > 0) {
+        newStudent.trophies = [...newStudent.trophies, ...earnedTrophies];
+        setNewTrophies(earnedTrophies);
+      }
+      return newStudent;
+    });
+    setStudents(updatedStudents);
+    saveStudents(updatedStudents);
+    return {pointsEarned, starsEarned, currentStudent: updatedStudents.find(s => s.id === currentStudentId)};
+  };
+
+  const clearNewTrophies = () => setNewTrophies([]);
+  const getRanking = () => [...students].sort((a, b) => b.totalPoints - a.totalPoints);
+
+  return {students, currentStudent, currentStudentId, registerStudent, selectStudent, logout, recordQuizResult, getRanking, newTrophies, clearNewTrophies};
+}
+
+function App() {
+  const {students, currentStudent, registerStudent, selectStudent, logout, recordQuizResult, getRanking, newTrophies, clearNewTrophies} = useStudents();
+  const [gameState, setGameState] = useState('login');
+  const [stats, setStats] = useState({correct:0,wrong:0,total:0,currentSubject:null,currentPhase:null});
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [shuffledQuestions, setShuffledQuestions] = useState([]);
+  const [streak, setStreak] = useState(0);
+  const [animateIn, setAnimateIn] = useState(false);
+  const [selectedPhase, setSelectedPhase] = useState(null);
+  const [nameInput, setNameInput] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [lastResult, setLastResult] = useState(null);
+
+  useEffect(() => { setAnimateIn(true); }, [gameState, currentQuestionIndex]);
+  useEffect(() => { if (currentStudent && gameState === 'login') navigateTo('menu'); }, []);
+
+  const navigateTo = (state) => {
+    setAnimateIn(false);
+    setTimeout(() => { setGameState(state); setAnimateIn(true); }, 150);
+  };
+
+  const handleRegister = () => {
+    setLoginError('');
+    if (!nameInput.trim()) { setLoginError('Digite seu nome!'); return; }
+    if (nameInput.trim().length < 2) { setLoginError('Nome muito curto!'); return; }
+    try { registerStudent(nameInput); setNameInput(''); navigateTo('menu'); } catch (e) { setLoginError('Erro ao cadastrar'); }
+  };
+
+  const startQuiz = (subject, phase) => {
+    const questions = questionsData[phase.id]?.[subject.id] || [];
+    const shuffled = shuffleArray(questions);
+    setShuffledQuestions(shuffled);
+    setStats({correct:0,wrong:0,total:shuffled.length,currentSubject:subject,currentPhase:phase});
+    setCurrentQuestionIndex(0);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setStreak(0);
+    setGameState('playing');
+    setAnimateIn(false);
+    setTimeout(() => setAnimateIn(true), 50);
+  };
+
+  const handleAnswer = (answerIndex) => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(answerIndex);
+    setShowExplanation(true);
+    const isCorrect = answerIndex === shuffledQuestions[currentQuestionIndex].correctAnswer;
+    if (isCorrect) { setStats(prev => ({...prev, correct: prev.correct + 1})); setStreak(prev => prev + 1); }
+    else { setStats(prev => ({...prev, wrong: prev.wrong + 1})); setStreak(0); }
+  };
+
+  const nextQuestion = () => {
+    if (currentQuestionIndex + 1 >= shuffledQuestions.length) {
+      const result = recordQuizResult(stats.currentSubject.id, stats.currentPhase.id, stats.correct, stats.wrong, streak);
+      if (result) setLastResult({pointsEarned: result.pointsEarned, starsEarned: result.starsEarned});
+      if (newTrophies.length > 0) navigateTo('trophy-celebration');
+      else navigateTo('result');
+    } else {
+      setAnimateIn(false);
+      setTimeout(() => { setCurrentQuestionIndex(prev => prev + 1); setSelectedAnswer(null); setShowExplanation(false); setAnimateIn(true); }, 200);
+    }
+  };
+
+  const goToMenu = () => navigateTo('menu');
+  const getScoreColor = () => { const p = (stats.correct / stats.total) * 100; if (p >= 80) return 'text-green-400'; if (p >= 60) return 'text-yellow-400'; return 'text-red-400'; };
+  const getScoreEmoji = () => { const p = (stats.correct / stats.total) * 100; if (p >= 90) return '🏆'; if (p >= 80) return '🌟'; if (p >= 60) return '👍'; if (p >= 40) return '💪'; return '📚'; };
+  const getScoreMessage = () => { const p = (stats.correct / stats.total) * 100; if (p >= 90) return 'Incrível! Você é um gênio!'; if (p >= 80) return 'Muito bem!'; if (p >= 60) return 'Bom trabalho!'; if (p >= 40) return 'Não desista!'; return 'Continue tentando!'; };
+  const getRankPosition = (i) => { if (i === 0) return '🥇'; if (i === 1) return '🥈'; if (i === 2) return '🥉'; return `#${i + 1}`; };
+  const getRankBg = (i, isCur) => { if (isCur) return 'bg-yellow-500/20 border-yellow-400/50'; if (i === 0) return 'bg-yellow-500/10 border-yellow-500/30'; if (i === 1) return 'bg-gray-400/10 border-gray-400/30'; if (i === 2) return 'bg-amber-600/10 border-amber-600/30'; return 'bg-white/5 border-white/10'; };
+
+  // LOGIN
+  if (gameState === 'login') {
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center justify-center p-4 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-md mx-auto text-center">
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 mb-2">Aprende Brincando</h1>
+          <p className="text-purple-200 mb-6">🎮 O jogo educativo mais divertido! 🎮</p>
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 shadow-2xl">
+            <div className="text-6xl mb-4">👋</div>
+            <h2 className="text-xl font-bold text-white mb-2">Bem-vindo!</h2>
+            <p className="text-purple-200 text-sm mb-6">Digite seu nome para começar!</p>
+            <input type="text" value={nameInput} onChange={(e) => {setNameInput(e.target.value); setLoginError('');}} onKeyDown={(e) => e.key === 'Enter' && handleRegister()} placeholder="Seu nome..." maxLength={30} className="w-full bg-white/10 border-2 border-white/20 rounded-xl px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-yellow-400 mb-2" autoFocus />
+            {loginError && <p className="text-red-400 text-sm mb-3">{loginError}</p>}
+            <button onClick={handleRegister} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold py-3 rounded-xl shadow-lg hover:scale-105 transition-all active:scale-95 mt-2">🚀 Entrar e Jogar!</button>
+            {students.length > 0 && <button onClick={() => navigateTo('select-student')} className="w-full bg-white/10 hover:bg-white/20 text-white font-medium py-3 rounded-xl border border-white/20 mt-3">👥 Entrar com perfil existente ({students.length})</button>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // SELECT STUDENT
+  if (gameState === 'select-student') {
+    const ranking = getRanking();
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center p-4 pt-6 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-2xl mx-auto">
+          <button onClick={() => navigateTo('login')} className="mb-3 text-purple-200 hover:text-white text-sm">← Voltar</button>
+          <h2 className="text-2xl font-bold text-white text-center mb-2">Quem está jogando?</h2>
+          <p className="text-purple-300 text-center mb-6 text-sm">Selecione seu perfil</p>
+          <div className="grid gap-3">
+            {ranking.map((student, index) => (
+              <button key={student.id} onClick={() => {selectStudent(student.id); navigateTo('menu');}} className={`bg-white/10 hover:bg-white/20 border-2 rounded-xl p-4 flex items-center gap-3 transition-all active:scale-95 ${getRankBg(index, false)}`}>
+                <div className="text-2xl">{getRankPosition(index)}</div>
+                <div className="flex-1 min-w-0 text-left">
+                  <p className="text-white font-bold truncate">{student.name}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-yellow-300 text-xs">⭐ {student.totalPoints} pts</span>
+                    <span className="text-purple-300 text-xs">🏆 Nível {student.level}</span>
+                  </div>
+                </div>
+                <div className="text-xl">→</div>
+              </button>
+            ))}
+          </div>
+          <button onClick={() => navigateTo('login')} className="w-full mt-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl">➕ Cadastrar novo aluno</button>
+        </div>
+      </div>
+    );
+  }
+
+  // MENU
+  if (gameState === 'menu' && currentStudent) {
+    const ranking = getRanking();
+    const position = ranking.findIndex(s => s.id === currentStudent.id) + 1;
+    const nextLevelPoints = getPointsForNextLevel(currentStudent.level + 1);
+    const currentLevelPoints = getPointsForNextLevel(currentStudent.level);
+    const progressToNext = ((currentStudent.totalPoints - currentLevelPoints) / (nextLevelPoints - currentLevelPoints)) * 100;
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center p-4 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-md mx-auto">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-2xl mb-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xl font-bold text-white">{currentStudent.name.charAt(0).toUpperCase()}</div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-white font-bold text-sm truncate">Olá, {currentStudent.name}!</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-yellow-300 text-xs">🏆 Nível {currentStudent.level}</span>
+                    <span className="text-cyan-300 text-xs">🌟 {currentStudent.stars}</span>
+                    <span className="text-purple-300 text-xs">🏅 #{position}</span>
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => navigateTo('profile')} className="bg-white/10 hover:bg-white/20 p-2 rounded-lg"><span className="text-lg">⚙️</span></button>
+            </div>
+            <div className="bg-white/10 rounded-full h-2 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-500" style={{width: `${Math.min(100, progressToNext)}%`}}></div>
+            </div>
+            <p className="text-purple-200 text-xs mt-1 text-right">{currentStudent.totalPoints} / {nextLevelPoints} pts</p>
+          </div>
+          <div className="grid gap-3">
+            <button onClick={() => navigateTo('phase-select')} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold text-xl py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-all active:scale-95">🚀 Jogar Agora!</button>
+            <div className="grid grid-cols-2 gap-3">
+              <button onClick={() => navigateTo('ranking')} className="bg-gradient-to-br from-purple-500 to-pink-600 text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-all active:scale-95">
+                <div className="text-2xl mb-1">🏆</div><div className="text-sm">Ranking</div>
+              </button>
+              <button onClick={() => navigateTo('profile')} className="bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:scale-[1.02] transition-all active:scale-95">
+                <div className="text-2xl mb-1">👤</div><div className="text-sm">Meu Perfil</div>
+              </button>
+            </div>
+          </div>
+          {ranking.length > 0 && (
+            <div className="mt-4 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-2xl p-4 border-2 border-yellow-400/30 shadow-xl">
+              <h3 className="text-white font-bold text-sm mb-3 text-center flex items-center justify-center gap-2"><span className="text-xl">🏆</span><span>Melhores Alunos</span><span className="text-xl">🏆</span></h3>
+              {ranking.length >= 3 && (
+                <div className="flex items-end justify-center gap-2 mb-3">
+                  <div className="flex-1 flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center text-lg font-bold text-white mb-1 border-2 border-gray-400">{ranking[1].name.charAt(0).toUpperCase()}</div>
+                    <p className="text-white/90 text-xs font-semibold truncate w-full text-center">{ranking[1].name}</p>
+                    <div className="bg-gray-400/30 rounded-lg px-2 py-1 mt-1 w-full text-center"><p className="text-gray-200 text-sm font-bold">{ranking[1].totalPoints}</p><p className="text-gray-300 text-[9px]">pontos</p></div>
+                    <div className="text-2xl mt-1">🥈</div>
+                  </div>
+                  <div className="flex-1 flex flex-col items-center">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-xl font-bold text-white mb-1 border-2 border-yellow-300 shadow-lg shadow-yellow-500/50">{ranking[0].name.charAt(0).toUpperCase()}</div>
+                    <p className={`text-xs font-bold truncate w-full text-center ${ranking[0].id === currentStudent.id ? 'text-yellow-300' : 'text-white'}`}>{ranking[0].name} {ranking[0].id === currentStudent.id && '⭐'}</p>
+                    <div className="bg-yellow-500/40 rounded-lg px-2 py-1 mt-1 w-full text-center border border-yellow-400/50"><p className="text-yellow-200 text-base font-bold">{ranking[0].totalPoints}</p><p className="text-yellow-300 text-[9px]">pontos</p></div>
+                    <div className="text-3xl mt-1">🥇</div>
+                  </div>
+                  <div className="flex-1 flex flex-col items-center">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center text-lg font-bold text-white mb-1 border-2 border-amber-500">{ranking[2].name.charAt(0).toUpperCase()}</div>
+                    <p className="text-white/90 text-xs font-semibold truncate w-full text-center">{ranking[2].name}</p>
+                    <div className="bg-amber-600/30 rounded-lg px-2 py-1 mt-1 w-full text-center"><p className="text-amber-200 text-sm font-bold">{ranking[2].totalPoints}</p><p className="text-amber-300 text-[9px]">pontos</p></div>
+                    <div className="text-2xl mt-1">🥉</div>
+                  </div>
+                </div>
+              )}
+              {ranking.length > 3 && (
+                <div className="space-y-1.5 mt-3 pt-3 border-t border-white/10">
+                  {ranking.slice(3, 5).map((student, idx) => (
+                    <div key={student.id} className={`flex items-center gap-2 p-2 rounded-lg ${student.id === currentStudent.id ? 'bg-yellow-500/20 border border-yellow-400/30' : 'bg-white/5'}`}>
+                      <span className="text-white/60 text-xs font-bold w-6">#{idx + 4}</span>
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-xs font-bold text-white">{student.name.charAt(0).toUpperCase()}</div>
+                      <span className={`flex-1 text-xs truncate ${student.id === currentStudent.id ? 'text-yellow-300 font-bold' : 'text-white/80'}`}>{student.name} {student.id === currentStudent.id && '(você)'}</span>
+                      <div className="text-right"><span className="text-yellow-300 text-xs font-bold">{student.totalPoints}</span><p className="text-white/40 text-[9px]">pontos</p></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {ranking.length > 0 && (
+                <div className="mt-3 text-center">
+                  <p className="text-purple-200 text-xs">{currentStudent.id === ranking[0]?.id ? '🌟 Parabéns! Você é o líder!' : position <= 5 ? `🔥 Você está em ${position}º! Continue!` : '💪 Jogue mais para entrar no Top 5!'}</p>
+                </div>
+              )}
+            </div>
+          )}
+          <button onClick={logout} className="w-full mt-4 text-purple-300 hover:text-white text-xs py-2">🚪 Trocar de aluno</button>
+        </div>
+      </div>
+    );
+  }
+
+  // PHASE SELECT
+  if (gameState === 'phase-select') {
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center p-4 pt-6 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-2xl mx-auto">
+          <button onClick={goToMenu} className="mb-3 text-purple-200 hover:text-white text-sm">← Voltar</button>
+          <h2 className="text-2xl font-bold text-white text-center mb-2">Escolha a Fase</h2>
+          <p className="text-purple-300 text-center mb-6 text-sm">Selecione o nível</p>
+          <div className="grid grid-cols-1 gap-3">
+            {phases.map((phase) => (
+              <button key={phase.id} onClick={() => {setSelectedPhase(phase); navigateTo('subject-select');}} className={`bg-gradient-to-r ${phase.color} p-4 rounded-2xl shadow-lg hover:scale-[1.02] transition-all active:scale-95 text-left`}>
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl">{phase.icon}</span>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-bold text-white">{phase.name}</h3>
+                    <p className="text-white/80 text-sm">{phase.description}</p>
+                    <span className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${phase.difficulty === 'Fácil' ? 'bg-green-400/30 text-green-100' : phase.difficulty === 'Médio' ? 'bg-yellow-400/30 text-yellow-100' : 'bg-red-400/30 text-red-100'}`}>{phase.difficulty}</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // SUBJECT SELECT
+  if (gameState === 'subject-select' && selectedPhase) {
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center p-4 pt-6 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-2xl mx-auto">
+          <button onClick={() => navigateTo('phase-select')} className="mb-3 text-purple-200 hover:text-white text-sm">← Voltar</button>
+          <div className="text-center mb-4">
+            <span className="text-3xl">{selectedPhase.icon}</span>
+            <h2 className="text-2xl font-bold text-white mt-2">{selectedPhase.name}</h2>
+            <p className="text-purple-300 text-sm">Escolha a matéria</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {subjects.map((subject) => {
+              const questions = questionsData[selectedPhase.id]?.[subject.id] || [];
+              return (
+                <button key={subject.id} onClick={() => startQuiz(subject, selectedPhase)} className={`bg-gradient-to-br ${subject.color} p-4 rounded-2xl shadow-lg hover:scale-105 transition-all active:scale-95 text-left`}>
+                  <span className="text-3xl mb-1 block">{subject.icon}</span>
+                  <h3 className="text-sm font-bold text-white">{subject.name}</h3>
+                  <p className="text-white/70 text-xs">{questions.length} questões</p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PLAYING
+  if (gameState === 'playing' && stats.currentSubject && stats.currentPhase) {
+    const currentQuestion = shuffledQuestions[currentQuestionIndex];
+    const progress = ((currentQuestionIndex + 1) / shuffledQuestions.length) * 100;
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center p-4 pt-4 transition-opacity duration-300 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-2xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <button onClick={goToMenu} className="text-purple-200 hover:text-white text-sm">← Sair</button>
+            <div className="flex items-center gap-2">
+              {streak >= 3 && <span className="bg-orange-500/30 text-orange-300 px-2 py-0.5 rounded-full text-xs font-bold animate-pulse">🔥 {streak}</span>}
+              <span className="text-purple-200 text-sm">{currentQuestionIndex + 1}/{shuffledQuestions.length}</span>
+            </div>
+          </div>
+          <div className="w-full bg-white/10 rounded-full h-2.5 mb-3 overflow-hidden">
+            <div className={`h-full rounded-full bg-gradient-to-r ${stats.currentSubject.color} transition-all duration-500`} style={{width: `${progress}%`}}></div>
+          </div>
+          <div className="flex items-center justify-between mb-3 gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-xl">{stats.currentSubject.icon}</span>
+              <span className="text-white/80 text-sm">{stats.currentSubject.name}</span>
+            </div>
+            <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-full">
+              <span className="text-sm">{stats.currentPhase.icon}</span>
+              <span className="text-white/70 text-xs">{stats.currentPhase.name}</span>
+            </div>
+          </div>
+          <div className="flex gap-2 mb-3">
+            <span className="bg-green-500/20 text-green-300 px-2 py-0.5 rounded-full text-xs">✓ {stats.correct}</span>
+            <span className="bg-red-500/20 text-red-300 px-2 py-0.5 rounded-full text-xs">✗ {stats.wrong}</span>
+          </div>
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-2xl mb-3">
+            <h3 className="text-lg font-bold text-white mb-4">{currentQuestion.question}</h3>
+            <div className="grid gap-2">
+              {currentQuestion.options.map((option, index) => {
+                let buttonClass = 'bg-white/5 border-white/20 text-white';
+                if (selectedAnswer !== null) {
+                  if (index === currentQuestion.correctAnswer) buttonClass = 'bg-green-500/30 border-green-400 text-green-100 ring-2 ring-green-400/50';
+                  else if (index === selectedAnswer && index !== currentQuestion.correctAnswer) buttonClass = 'bg-red-500/30 border-red-400 text-red-100 ring-2 ring-red-400/50';
+                  else buttonClass = 'bg-white/5 border-white/10 text-white/50';
+                }
+                return (
+                  <button key={index} onClick={() => handleAnswer(index)} disabled={selectedAnswer !== null} className={`w-full text-left p-3 rounded-xl border-2 transition-all active:scale-[0.98] ${buttonClass} ${selectedAnswer === null ? 'cursor-pointer' : 'cursor-default'}`}>
+                    <span className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold">{String.fromCharCode(65 + index)}</span>
+                      <span className="font-medium text-sm break-words flex-1">{option}</span>
+                      {selectedAnswer !== null && index === currentQuestion.correctAnswer && <span className="text-green-400 text-lg">✓</span>}
+                      {selectedAnswer === index && index !== currentQuestion.correctAnswer && <span className="text-red-400 text-lg">✗</span>}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {showExplanation && (
+            <div className={`rounded-xl p-3 mb-3 border ${selectedAnswer === currentQuestion.correctAnswer ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/30'}`}>
+              <p className={`font-medium text-sm ${selectedAnswer === currentQuestion.correctAnswer ? 'text-green-300' : 'text-red-300'}`}>{selectedAnswer === currentQuestion.correctAnswer ? '🎉 Correto!' : '❌ Incorreto!'}</p>
+              <p className="text-white/80 text-xs mt-1">💡 {currentQuestion.explanation}</p>
+            </div>
+          )}
+          {selectedAnswer !== null && (
+            <button onClick={nextQuestion} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-all">
+              {currentQuestionIndex + 1 >= shuffledQuestions.length ? '🏁 Ver Resultado' : '→ Próxima Questão'}
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // TROPHY CELEBRATION
+  if (gameState === 'trophy-celebration' && newTrophies.length > 0) {
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center justify-center p-4 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-md mx-auto text-center">
+          <div className="text-6xl mb-4 animate-bounce">🎊</div>
+          <h2 className="text-2xl font-bold text-white mb-2">Novos Troféus!</h2>
+          <p className="text-purple-200 text-sm mb-6">Você conquistou:</p>
+          <div className="space-y-3 mb-6">
+            {newTrophies.map((trophy) => (
+              <div key={trophy.id} className={`bg-gradient-to-r ${getTierColor(trophy.tier)} p-[2px] rounded-2xl`}>
+                <div className="bg-indigo-900/90 rounded-2xl p-4 flex items-center gap-3">
+                  <div className="text-4xl">{trophy.icon}</div>
+                  <div className="text-left flex-1 min-w-0">
+                    <p className="text-white font-bold truncate">{trophy.name}</p>
+                    <p className="text-white/70 text-xs">{trophy.description}</p>
+                    <p className="text-yellow-300 text-xs mt-1 uppercase">{trophy.tier}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => {clearNewTrophies(); navigateTo('result');}} className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 font-bold py-3 rounded-xl active:scale-95 transition-all">✨ Continuar</button>
+        </div>
+      </div>
+    );
+  }
+
+  // RESULT
+  if (gameState === 'result') {
+    const percentage = Math.round((stats.correct / stats.total) * 100);
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center justify-center p-4 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-lg mx-auto text-center">
+          <div className="text-6xl mb-3 animate-bounce">{getScoreEmoji()}</div>
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-2xl mb-4">
+            <h2 className="text-xl font-bold text-white mb-2">Resultado Final</h2>
+            {lastResult && (
+              <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-400/30 rounded-xl p-3 mb-4">
+                <div className="flex justify-around items-center">
+                  <div><p className="text-yellow-300 text-2xl font-bold">+{lastResult.pointsEarned}</p><p className="text-white/60 text-xs">pontos</p></div>
+                  <div className="text-2xl">⭐</div>
+                  <div><p className="text-cyan-300 text-2xl font-bold">+{lastResult.starsEarned}</p><p className="text-white/60 text-xs">estrelas</p></div>
+                </div>
+              </div>
+            )}
+            <div className="relative w-32 h-32 mx-auto mb-4">
+              <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="8" />
+                <circle cx="50" cy="50" r="45" fill="none" stroke={percentage >= 80 ? '#4ade80' : percentage >= 60 ? '#facc15' : '#f87171'} strokeWidth="8" strokeLinecap="round" strokeDasharray={`${percentage * 2.83} 283`} className="transition-all duration-1000" />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center"><span className={`text-3xl font-bold ${getScoreColor()}`}>{percentage}%</span></div>
+            </div>
+            <p className="text-base text-white font-medium mb-3">{getScoreMessage()}</p>
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-white/5 rounded-xl p-2"><p className="text-xl font-bold text-green-400">{stats.correct}</p><p className="text-xs text-white/60">Acertos</p></div>
+              <div className="bg-white/5 rounded-xl p-2"><p className="text-xl font-bold text-red-400">{stats.wrong}</p><p className="text-xs text-white/60">Erros</p></div>
+              <div className="bg-white/5 rounded-xl p-2"><p className="text-xl font-bold text-yellow-400">{stats.total}</p><p className="text-xs text-white/60">Total</p></div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            <button onClick={() => startQuiz(stats.currentSubject, stats.currentPhase)} className="bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-xl active:scale-95 transition-all">🔄 Jogar Novamente</button>
+            <button onClick={() => navigateTo('subject-select')} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 rounded-xl active:scale-95 transition-all">📚 Outra Matéria</button>
+            <button onClick={goToMenu} className="bg-white/10 hover:bg-white/20 text-white font-medium py-2.5 rounded-xl border border-white/20 transition-all">🏠 Menu Principal</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // RANKING
+  if (gameState === 'ranking' && currentStudent) {
+    const ranking = getRanking();
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center p-4 pt-6 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-2xl mx-auto">
+          <button onClick={goToMenu} className="mb-3 text-purple-200 hover:text-white text-sm">← Voltar</button>
+          <h2 className="text-2xl font-bold text-white text-center mb-2">🏆 Ranking Geral</h2>
+          <p className="text-purple-300 text-center mb-4 text-sm">Quem é o melhor aluno?</p>
+          {ranking.length === 0 && <div className="bg-white/10 rounded-xl p-6 text-center"><p className="text-white">Nenhum aluno cadastrado!</p></div>}
+          <div className="space-y-2">
+            {ranking.map((student, index) => {
+              const isCurrentUser = student.id === currentStudent.id;
+              return (
+                <div key={student.id} className={`border-2 rounded-xl p-3 ${getRankBg(index, isCurrentUser)}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl w-10 text-center">{getRankPosition(index)}</div>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-sm font-bold text-white">{student.name.charAt(0).toUpperCase()}</div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-bold text-sm truncate ${isCurrentUser ? 'text-yellow-300' : 'text-white'}`}>{student.name} {isCurrentUser && <span className="text-xs">(você)</span>}</p>
+                      <div className="flex items-center gap-2 flex-wrap text-xs">
+                        <span className="text-purple-300">🏆 Nível {student.level}</span>
+                        <span className="text-cyan-300">🌟 {student.stars}</span>
+                        <span className="text-green-300">✓ {student.totalCorrect}</span>
+                      </div>
+                    </div>
+                    <div className="text-right"><p className="text-yellow-300 font-bold">{student.totalPoints}</p><p className="text-white/50 text-xs">pontos</p></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PROFILE
+  if (gameState === 'profile' && currentStudent) {
+    const ranking = getRanking();
+    const position = ranking.findIndex(s => s.id === currentStudent.id) + 1;
+    const nextLevelPoints = getPointsForNextLevel(currentStudent.level + 1);
+    const currentLevelPoints = getPointsForNextLevel(currentStudent.level);
+    const progressToNext = ((currentStudent.totalPoints - currentLevelPoints) / (nextLevelPoints - currentLevelPoints)) * 100;
+    const accuracy = currentStudent.totalAnswered > 0 ? Math.round((currentStudent.totalCorrect / currentStudent.totalAnswered) * 100) : 0;
+    return (
+      <div className={`min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center p-4 pt-6 transition-opacity duration-500 ${animateIn ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-full max-w-2xl mx-auto">
+          <button onClick={goToMenu} className="mb-3 text-purple-200 hover:text-white text-sm">← Voltar</button>
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-4 border border-white/20 shadow-2xl mb-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-2xl font-bold text-white">{currentStudent.name.charAt(0).toUpperCase()}</div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg font-bold text-white truncate">{currentStudent.name}</h2>
+                <p className="text-purple-200 text-xs">🏆 Nível {currentStudent.level} • 🏅 #{position} no ranking</p>
+              </div>
+            </div>
+            <div className="bg-white/10 rounded-full h-3 overflow-hidden mb-1">
+              <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-500 transition-all duration-500" style={{width: `${Math.min(100, progressToNext)}%`}}></div>
+            </div>
+            <p className="text-purple-200 text-xs text-right">{currentStudent.totalPoints} / {nextLevelPoints} pts</p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+            <div className="bg-white/10 rounded-xl p-3 text-center border border-white/10"><p className="text-xl font-bold text-yellow-300">{currentStudent.totalPoints}</p><p className="text-xs text-white/60">Pontos</p></div>
+            <div className="bg-white/10 rounded-xl p-3 text-center border border-white/10"><p className="text-xl font-bold text-cyan-300">{currentStudent.stars}</p><p className="text-xs text-white/60">Estrelas</p></div>
+            <div className="bg-white/10 rounded-xl p-3 text-center border border-white/10"><p className="text-xl font-bold text-green-300">{accuracy}%</p><p className="text-xs text-white/60">Precisão</p></div>
+            <div className="bg-white/10 rounded-xl p-3 text-center border border-white/10"><p className="text-xl font-bold text-orange-300">🔥 {currentStudent.bestStreak}</p><p className="text-xs text-white/60">Melhor seq.</p></div>
+          </div>
+          <div className="bg-white/10 rounded-2xl p-4 border border-white/10 mb-4">
+            <h3 className="text-white font-bold mb-3">🏆 Troféus ({currentStudent.trophies.length}/{TROPHY_DEFINITIONS.length})</h3>
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              {TROPHY_DEFINITIONS.map((def) => {
+                const unlocked = currentStudent.trophies.find(t => t.id === def.id);
+                return (
+                  <div key={def.id} className={`relative rounded-xl p-2 text-center border-2 ${unlocked ? `${getTierBorder(def.tier)} bg-white/10` : 'border-white/10 bg-white/5 opacity-50'}`}>
+                    <div className={`text-2xl mb-1 ${unlocked ? '' : 'grayscale'}`}>{def.icon}</div>
+                    <p className="text-[10px] text-white/80 leading-tight truncate">{unlocked ? def.name : '???'}</p>
+                    {unlocked && <div className={`absolute top-0 right-0 bg-gradient-to-r ${getTierColor(def.tier)} text-white text-[8px] px-1 rounded-bl rounded-tr-lg`}>{def.tier.toUpperCase()}</div>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button onClick={() => navigateTo('ranking')} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 rounded-xl active:scale-95 transition-all text-sm">🏆 Ver Ranking</button>
+            <button onClick={logout} className="bg-white/10 hover:bg-white/20 text-white font-medium py-3 rounded-xl border border-white/20 transition-all text-sm">🚪 Trocar de Aluno</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
